@@ -108,20 +108,52 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
             let title = markerData["title"] as? String ?? "\(index + 1)"
             var annotation = PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng))
             
-            // Style as numbered circle
-            annotation.textField = title
-            annotation.textAnchor = .center
-            annotation.textSize = 14
-            annotation.textColor = StyleColor(.white)
-            annotation.circleRadius = 20
-            annotation.circleColor = StyleColor(UIColor(red: 1.0, green: 0.32, blue: 0.32, alpha: 1.0))
-            annotation.circleStrokeWidth = 2
-            annotation.circleStrokeColor = StyleColor(.white)
+            // Create numbered circle image
+            let circleImage = createNumberedCircleImage(number: title)
+            annotation.image = .init(image: circleImage, name: "marker-\(index)")
             
             markerAnnotations.append(annotation)
         }
         
         pointAnnotationManager?.annotations = markerAnnotations
+    }
+    
+    private func createNumberedCircleImage(number: String) -> UIImage {
+        let size = CGSize(width: 40, height: 40)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        
+        return renderer.image { context in
+            let rect = CGRect(origin: .zero, size: size)
+            
+            // Draw circle background
+            context.cgContext.setFillColor(UIColor(red: 1.0, green: 0.32, blue: 0.32, alpha: 1.0).cgColor)
+            context.cgContext.fillEllipse(in: rect)
+            
+            // Draw white border
+            context.cgContext.setStrokeColor(UIColor.white.cgColor)
+            context.cgContext.setLineWidth(2)
+            context.cgContext.strokeEllipse(in: rect.insetBy(dx: 1, dy: 1))
+            
+            // Draw number text
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .center
+            
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.boldSystemFont(ofSize: 16),
+                .foregroundColor: UIColor.white,
+                .paragraphStyle: paragraphStyle
+            ]
+            
+            let textSize = (number as NSString).size(withAttributes: attributes)
+            let textRect = CGRect(
+                x: (size.width - textSize.width) / 2,
+                y: (size.height - textSize.height) / 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+            
+            (number as NSString).draw(in: textRect, withAttributes: attributes)
+        }
     }
 
     override init(frame: CGRect) {

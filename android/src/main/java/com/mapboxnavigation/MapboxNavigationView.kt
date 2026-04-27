@@ -3,11 +3,17 @@ package com.mapboxnavigation
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.mapbox.api.directions.v5.DirectionsCriteria
@@ -860,22 +866,54 @@ class MapboxNavigationView(private val context: ThemedReactContext): FrameLayout
         val lng = marker.getDouble("longitude")
         val title = marker.getString("title") ?: "${i + 1}"
 
+        // Create numbered circle bitmap
+        val bitmap = createNumberedCircleBitmap(title)
+        
         val pointAnnotationOptions = PointAnnotationOptions()
           .withPoint(Point.fromLngLat(lng, lat))
-          .withTextField(title)
-          .withTextAnchor(TextAnchor.CENTER)
-          .withTextSize(14.0)
-          .withTextColor("#FFFFFF")
-          .withIconSize(1.5)
-          .withCircleRadius(20.0)
-          .withCircleColor("#FF5252")
-          .withCircleStrokeWidth(2.0)
-          .withCircleStrokeColor("#FFFFFF")
+          .withIconImage(bitmap)
 
         pointAnnotationManager?.create(pointAnnotationOptions)?.let {
           markerAnnotations.add(it)
         }
       }
     }
+  }
+
+  private fun createNumberedCircleBitmap(number: String): Bitmap {
+    val size = 80 // pixels
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    
+    // Draw circle background
+    val circlePaint = Paint().apply {
+      color = Color.parseColor("#FF5252")
+      isAntiAlias = true
+      style = Paint.Style.FILL
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, circlePaint)
+    
+    // Draw white border
+    val borderPaint = Paint().apply {
+      color = Color.WHITE
+      isAntiAlias = true
+      style = Paint.Style.STROKE
+      strokeWidth = 4f
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, borderPaint)
+    
+    // Draw number text
+    val textPaint = Paint().apply {
+      color = Color.WHITE
+      isAntiAlias = true
+      textSize = 32f
+      typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+      textAlign = Paint.Align.CENTER
+    }
+    
+    val textY = size / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
+    canvas.drawText(number, size / 2f, textY, textPaint)
+    
+    return bitmap
   }
 }
