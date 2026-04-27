@@ -81,3 +81,6 @@ lib/
 # tokens and secrets
 mapbox_access_token.xml
 MapboxNavigationExample/Info.plist
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
