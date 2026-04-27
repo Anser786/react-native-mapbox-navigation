@@ -75,15 +75,14 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
     @objc var vehicleMaxHeight: NSNumber?
     @objc var vehicleMaxWidth: NSNumber?
     
-    private var pendingMarkers: [[String: Any]]?
-    
-    @objc func setMarkers(_ markers: [[String: Any]]) {
-        pendingMarkers = markers
-        applyMarkers()
+    @objc var markers: [[String: Any]] = [] {
+        didSet {
+            applyMarkers()
+        }
     }
     
     private func applyMarkers() {
-        guard let markers = pendingMarkers,
+        guard !markers.isEmpty,
               let mapView = navViewController?.navigationMapView?.mapView else {
             return
         }
