@@ -858,12 +858,19 @@ class MapboxNavigationView(private val context: ThemedReactContext): FrameLayout
         val marker = markerArray.getMap(i)
         val lat = marker.getDouble("latitude")
         val lng = marker.getDouble("longitude")
-        val title = marker.getString("title") ?: ""
+        val title = marker.getString("title") ?: "${i + 1}"
 
         val pointAnnotationOptions = PointAnnotationOptions()
           .withPoint(Point.fromLngLat(lng, lat))
           .withTextField(title)
-          .withTextAnchor(TextAnchor.TOP)
+          .withTextAnchor(TextAnchor.CENTER)
+          .withTextSize(14.0)
+          .withTextColor("#FFFFFF")
+          .withIconSize(1.5)
+          .withCircleRadius(20.0)
+          .withCircleColor("#FF5252")
+          .withCircleStrokeWidth(2.0)
+          .withCircleStrokeColor("#FFFFFF")
 
         pointAnnotationManager?.create(pointAnnotationOptions)?.let {
           markerAnnotations.add(it)

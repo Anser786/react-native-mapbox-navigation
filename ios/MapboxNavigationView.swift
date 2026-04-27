@@ -98,17 +98,26 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
             pointAnnotationManager = mapView.annotations.makePointAnnotationManager()
         }
         
-        // Add new markers
-        for markerData in markers {
+        // Add new markers with numbered circles
+        for (index, markerData) in markers.enumerated() {
             guard let lat = markerData["latitude"] as? Double,
                   let lng = markerData["longitude"] as? Double else {
                 continue
             }
             
-            let title = markerData["title"] as? String ?? ""
+            let title = markerData["title"] as? String ?? "\(index + 1)"
             var annotation = PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng))
+            
+            // Style as numbered circle
             annotation.textField = title
-            annotation.textAnchor = .top
+            annotation.textAnchor = .center
+            annotation.textSize = 14
+            annotation.textColor = StyleColor(.white)
+            annotation.circleRadius = 20
+            annotation.circleColor = StyleColor(UIColor(red: 1.0, green: 0.32, blue: 0.32, alpha: 1.0))
+            annotation.circleStrokeWidth = 2
+            annotation.circleStrokeColor = StyleColor(.white)
+            
             markerAnnotations.append(annotation)
         }
         
