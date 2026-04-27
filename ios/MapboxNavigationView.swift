@@ -108,7 +108,7 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
             
             let title = markerData["title"] as? String ?? ""
             var annotation = PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng))
-            annotation.text = title
+            annotation.textField = title
             annotation.textAnchor = .top
             markerAnnotations.append(annotation)
         }
