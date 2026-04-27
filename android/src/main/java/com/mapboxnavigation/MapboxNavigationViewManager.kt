@@ -116,6 +116,11 @@ class MapboxNavigationViewManager(private var reactContext: ReactApplicationCont
     }
   }
 
+  @ReactProp(name = "markers")
+  fun setMarkers(view: MapboxNavigationView?, markers: ReadableArray?) {
+    view?.setMarkers(markers)
+  }
+
   companion object {
     const val NAME = "MapboxNavigationView"
   }

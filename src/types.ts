@@ -16,6 +16,14 @@ export type Waypoint = Coordinate & {
   separatesLegs?: boolean;
 };
 
+export type Marker = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title?: string;
+  icon?: string; // Optional: path to custom icon
+};
+
 export type WaypointEvent = Coordinate & {
   /**
    * Name of Waypoint if provided or index of legs/waypoint
@@ -69,6 +77,11 @@ export interface MapboxNavigationProps {
   destination: Coordinate & { title?: string };
   language?: Language;
   distanceUnit?: 'metric' | 'imperial';
+
+  /**
+   * Custom markers to display on the map
+   */
+  markers?: Marker[];
 
   /**
    * Specifies the mode of travel for navigation.

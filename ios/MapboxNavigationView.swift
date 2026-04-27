@@ -2,6 +2,7 @@
 import MapboxCoreNavigation
 import MapboxNavigation
 import MapboxDirections
+import MapboxMaps
 
 extension UIView {
     var parentViewController: UIViewController? {
@@ -29,6 +30,8 @@ public protocol MapboxCarPlayNavigationDelegate {
 public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
     public weak var navViewController: NavigationViewController?
     public var indexedRouteResponse: IndexedRouteResponse?
+    private var pointAnnotationManager: PointAnnotationManager?
+    private var markerAnnotations: [PointAnnotation] = []
     
     var embedded: Bool
     var embedding: Bool
@@ -71,6 +74,47 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
     @objc var onArrive: RCTDirectEventBlock?
     @objc var vehicleMaxHeight: NSNumber?
     @objc var vehicleMaxWidth: NSNumber?
+    
+    private var pendingMarkers: [[String: Any]]?
+    
+    @objc func setMarkers(_ markers: [[String: Any]]) {
+        pendingMarkers = markers
+        applyMarkers()
+    }
+    
+    private func applyMarkers() {
+        guard let markers = pendingMarkers,
+              let mapView = navViewController?.navigationMapView?.mapView else {
+            return
+        }
+        
+        // Clear existing markers
+        if let manager = pointAnnotationManager {
+            manager.annotations = []
+        }
+        markerAnnotations.removeAll()
+        
+        // Get annotation manager
+        if pointAnnotationManager == nil {
+            pointAnnotationManager = mapView.annotations.makePointAnnotationManager()
+        }
+        
+        // Add new markers
+        for markerData in markers {
+            guard let lat = markerData["latitude"] as? Double,
+                  let lng = markerData["longitude"] as? Double else {
+                continue
+            }
+            
+            let title = markerData["title"] as? String ?? ""
+            var annotation = PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng))
+            annotation.text = title
+            annotation.textAnchor = .top
+            markerAnnotations.append(annotation)
+        }
+        
+        pointAnnotationManager?.annotations = markerAnnotations
+    }
 
     override init(frame: CGRect) {
         self.embedded = false
@@ -163,6 +207,9 @@ public class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
                 vc.view.frame = strongSelf.bounds
                 vc.didMove(toParent: parentVC)
                 strongSelf.navViewController = vc
+                
+                // Apply pending markers after navigation view is ready
+                strongSelf.applyMarkers()
             }
 
             strongSelf.embedding = false

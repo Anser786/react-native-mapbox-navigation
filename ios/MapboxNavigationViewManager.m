@@ -31,5 +31,11 @@ RCT_EXPORT_VIEW_PROPERTY(language, NSString)
 RCT_EXPORT_VIEW_PROPERTY(distanceUnit, NSString)
 RCT_EXPORT_VIEW_PROPERTY(mute, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(travelMode, NSString)
+RCT_CUSTOM_VIEW_PROPERTY(markers, NSArray, MapboxNavigationView)
+{
+    if (json) {
+        [view setMarkers:json];
+    }
+}
 
 @end

@@ -22,6 +22,13 @@ import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.TextAnchor
+import com.facebook.react.bridge.ReadableArray
 import com.mapbox.navigation.base.TimeFormat
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
@@ -96,6 +103,8 @@ class MapboxNavigationView(private val context: ThemedReactContext): FrameLayout
   private var distanceUnit: String = DirectionsCriteria.IMPERIAL
   private var locale = Locale.getDefault()
   private var travelMode: String = DirectionsCriteria.PROFILE_DRIVING
+  private var pointAnnotationManager: PointAnnotationManager? = null
+  private val markerAnnotations = mutableListOf<PointAnnotation>()
 
   /**
    * Bindings to the example layout.
@@ -830,6 +839,36 @@ class MapboxNavigationView(private val context: ThemedReactContext): FrameLayout
         "driving" -> DirectionsCriteria.PROFILE_DRIVING
         "driving-traffic" -> DirectionsCriteria.PROFILE_DRIVING_TRAFFIC
         else -> DirectionsCriteria.PROFILE_DRIVING_TRAFFIC
+    }
+  }
+
+  fun setMarkers(markers: ReadableArray?) {
+    // Clear existing markers
+    markerAnnotations.forEach { pointAnnotationManager?.delete(it) }
+    markerAnnotations.clear()
+
+    markers?.let { markerArray ->
+      // Get annotation manager
+      if (pointAnnotationManager == null) {
+        pointAnnotationManager = binding.mapView.annotations.createPointAnnotationManager()
+      }
+
+      // Add new markers
+      for (i in 0 until markerArray.size()) {
+        val marker = markerArray.getMap(i)
+        val lat = marker.getDouble("latitude")
+        val lng = marker.getDouble("longitude")
+        val title = marker.getString("title") ?: ""
+
+        val pointAnnotationOptions = PointAnnotationOptions()
+          .withPoint(Point.fromLngLat(lng, lat))
+          .withTextField(title)
+          .withTextAnchor(TextAnchor.TOP)
+
+        pointAnnotationManager?.create(pointAnnotationOptions)?.let {
+          markerAnnotations.add(it)
+        }
+      }
     }
   }
 }
